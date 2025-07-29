@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MAR للمحاسبة</title>
+    <script>
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+  alert('غير مسموح بهذا الإجراء');
+});
+</script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -470,6 +476,75 @@
           justify-content: center;
         }
       }
+      /* تصميم عداد الزوار قبل الدخول */
+.pre-login-counter {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 20px;
+  border-radius: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Tajawal', sans-serif;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.counter-icon {
+  font-size: 24px;
+  background: #28a745;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.counter-text {
+  font-size: 14px;
+  color: #333;
+}
+
+.counter-text span {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .pre-login-counter {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    justify-content: center;
+  }
+}
+/* تأثير الطفو للعداد */
+.pre-login-counter {
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+/* تأثير النبض */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.counter-icon {
+  animation: pulse 2s infinite;
+}
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
@@ -655,6 +730,13 @@
           كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى
         </p>
       </div>
+      <!-- عداد الزوار -->
+<div class="pre-login-counter">
+  <div class="counter-icon">👥</div>
+  <div class="counter-text">
+    <span id="preLoginCounter">0</span> زائر يستخدم النظام حالياً
+  </div>
+</div>
     </div>
 
     <!-- شاشة تحميل البيانات -->
@@ -858,7 +940,35 @@
     </div>
     
     <script>
-      const correctPassword = "marmarmar";
+      // عداد الزوار قبل الدخول
+function updatePreLoginCounter() {
+  // البدء بقيمة عشوائية بين 50-150
+  let count = localStorage.getItem('preLoginVisitors');
+  if (!count) {
+    count = Math.floor(Math.random() * 100) + 50;
+  } else {
+    count = parseInt(count);
+    // زيادة عشوائية بين 1-5 كل 3 ثوان
+    count += Math.floor(Math.random() * 5) + 1;
+  }
+  
+  // تخزين القيمة
+  localStorage.setItem('preLoginVisitors', count);
+  
+  // عرض القيمة مع فواصل للألوف
+  document.getElementById('preLoginCounter').textContent = count.toLocaleString();
+  
+  // تحديث العداد كل 3 ثوان
+  setTimeout(updatePreLoginCounter, 3000);
+}
+
+// بدء العداد عند تحميل الصفحة
+window.addEventListener('load', function() {
+  if (document.getElementById('passwordScreen').style.display !== 'none') {
+    updatePreLoginCounter();
+  }
+});
+      const correctPassword = "0986330544";
       const STORAGE_KEY = "mar_accounting_data";
 
       document.getElementById("currentYear").textContent =
