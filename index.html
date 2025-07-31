@@ -931,634 +931,629 @@ document.addEventListener('contextmenu', function(e) {
         abdullah
       </div>
     </div>
-    
     <script>
-      // عداد الزوار قبل الدخول
-function updatePreLoginCounter() {
-  // البدء بقيمة عشوائية بين 50-150
-  let count = localStorage.getItem('preLoginVisitors');
-  if (!count) {
-    count = Math.floor(Math.random() * 100) + 50;
-  } else {
-    count = parseInt(count);
-    // زيادة عشوائية بين 1-5 كل 3 ثوان
-    count += Math.floor(Math.random() * 5) + 1;
-  }
-  
-  // تخزين القيمة
-  localStorage.setItem('preLoginVisitors', count);
-  
-  // عرض القيمة مع فواصل للألوف
-  document.getElementById('preLoginCounter').textContent = count.toLocaleString();
-  
-  // تحديث العداد كل 3 ثوان
-  setTimeout(updatePreLoginCounter, 3000);
-}
-
-// بدء العداد عند تحميل الصفحة
-window.addEventListener('load', function() {
-  if (document.getElementById('passwordScreen').style.display !== 'none') {
-    updatePreLoginCounter();
-  }
-});
-      const correctPassword = "0000";
-      const STORAGE_KEY = "mar_accounting_data";
-
-      document.getElementById("currentYear").textContent =
-        new Date().getFullYear();
-
-      // بيانات الاتصال بالخادم
-const API_URL = "https://script.google.com/macros/s/AKfycbxfc--nndyS-T7AXENNuD7O-lZOQCLKdS_rjPU7P8SOskAhhGE8Z02d9XOg2Mly45It/exec";
-const ADMIN_USERNAME = "abdullahalasaadmar";
-const ADMIN_PASSWORD = "0986330544mar";
-let currentUser = "";
-
-// دالة تسجيل الدخول الجديدة
-function login() {
-  const username = document.getElementById("usernameInput").value.trim();
-  const password = document.getElementById("passwordInput").value.trim();
-  const errorMsg = document.getElementById("errorMsg");
-
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    sessionStorage.setItem("loggedUser", ADMIN_USERNAME);
-    showAdminPanel();
-    showLoadDataScreen();
-    return;
-  }
-
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "login",
-      username,
-      password
-    }),
-  })
-  .then(res => res.text())
-  .then(res => {
-    if (res === "success") {
-      currentUser = username;
-      sessionStorage.setItem("loggedUser", username);
-      document.getElementById("errorMsg").style.display = "none";
-      showLoadDataScreen();
+  // عداد الزوار قبل الدخول
+  function updatePreLoginCounter() {
+    let count = localStorage.getItem('preLoginVisitors');
+    if (!count) {
+      count = Math.floor(Math.random() * 100) + 50;
     } else {
-      errorMsg.style.display = "block";
-      document.getElementById("passwordInput").value = "";
-      document.getElementById("passwordInput").focus();
+      count = parseInt(count);
+      // زيادة عشوائية بين 1-5 كل 3 ثوان
+      count += Math.floor(Math.random() * 5) + 1;
     }
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    errorMsg.textContent = "حدث خطأ في الاتصال بالخادم";
-    errorMsg.style.display = "block";
-  });
-}
-
-// دالة إضافة مستخدم (للوحة التحكم)
-function addUser() {
-  const username = document.getElementById("newUsername").value.trim();
-  const password = document.getElementById("newPassword").value.trim();
-
-  if (!username || !password) {
-    alert("يجب إدخال جميع الحقول");
-    return;
+    
+    localStorage.setItem('preLoginVisitors', count);
+    document.getElementById('preLoginCounter').textContent = count.toLocaleString();
+    setTimeout(updatePreLoginCounter, 3000);
   }
 
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "addUser",
-      username,
-      password,
-      addedBy: ADMIN_USERNAME
-    }),
-  })
-  .then(res => res.text())
-  .then(() => {
-    alert("✅ تم إضافة المستخدم");
-    document.getElementById("newUsername").value = "";
-    document.getElementById("newPassword").value = "";
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    alert("حدث خطأ أثناء إضافة المستخدم");
+  window.addEventListener('load', function() {
+    if (document.getElementById('passwordScreen').style.display !== 'none') {
+      updatePreLoginCounter();
+    }
   });
-}
 
-      function showLoadDataScreen() {
-        document.getElementById("loadDataScreen").classList.remove("hidden");
-      }
+  const STORAGE_KEY = "mar_accounting_data";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxfc--nndyS-T7AXENNuD7O-lZOQCLKdS_rjPU7P8SOskAhhGE8Z02d9XOg2Mly45It/exec";
+  const ADMIN_USERNAME = "abdullahalasaadmar";
+  const ADMIN_PASSWORD = "0986330544mar";
+  let currentUser = "";
+  let products = [];
+  let currentExchangeRate = null;
 
-      function backToPasswordScreen() {
-        document.getElementById("loadDataScreen").classList.add("hidden");
-        document.getElementById("passwordScreen").style.display = "block";
+  document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+  // دالة تسجيل الدخول
+  function login() {
+    const username = document.getElementById("usernameInput").value.trim();
+    const password = document.getElementById("passwordInput").value.trim();
+    const errorMsg = document.getElementById("errorMsg");
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      sessionStorage.setItem("loggedUser", ADMIN_USERNAME);
+      showAdminPanel();
+      showLoadDataScreen();
+      return;
+    }
+
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "login",
+        username,
+        password
+      }),
+    })
+    .then(res => res.text())
+    .then(res => {
+      if (res === "success") {
+        currentUser = username;
+        sessionStorage.setItem("loggedUser", username);
+        document.getElementById("errorMsg").style.display = "none";
+        showLoadDataScreen();
+      } else {
+        errorMsg.style.display = "block";
         document.getElementById("passwordInput").value = "";
         document.getElementById("passwordInput").focus();
-        document.getElementById("errorMsg").style.display = "none";
       }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      errorMsg.textContent = "حدث خطأ في الاتصال بالخادم";
+      errorMsg.style.display = "block";
+    });
+  }
 
-      function loadSavedData() {
-        document.getElementById("loadDataScreen").classList.add("hidden");
-        document.getElementById("mainContent").classList.remove("hidden");
-        loadData();
-      }
+  // دالة إضافة مستخدم (للوحة التحكم)
+  function addUser() {
+    const username = document.getElementById("newUsername").value.trim();
+    const password = document.getElementById("newPassword").value.trim();
 
-      function startNewProject() {
-        if (
-          confirm(
-            "هل أنت متأكد أنك تريد بدء مشروع جديد؟ سيتم مسح جميع البيانات المحفوظة."
-          )
-        ) {
-          products = [];
-          currentExchangeRate = null;
-          document.getElementById("exchangeRate").value = "";
-          document.getElementById("exchangeRate").readOnly = false;
-          document.getElementById("loadDataScreen").classList.add("hidden");
-          document.getElementById("mainContent").classList.remove("hidden");
-          localStorage.removeItem(STORAGE_KEY);
-          alert("تم بدء مشروع جديد بنجاح");
-        }
-      }
+    if (!username || !password) {
+      alert("يجب إدخال جميع الحقول");
+      return;
+    }
 
-      document
-        .getElementById("passwordInput")
-        .addEventListener("keyup", function (event) {
-          if (event.key === "Enter") checkPassword();
-        });
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "addUser",
+        username,
+        password,
+        addedBy: ADMIN_USERNAME
+      }),
+    })
+    .then(res => res.text())
+    .then(() => {
+      alert("✅ تم إضافة المستخدم");
+      document.getElementById("newUsername").value = "";
+      document.getElementById("newPassword").value = "";
+      loadUserList();
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("حدث خطأ أثناء إضافة المستخدم");
+    });
+  }
 
-      let products = [];
-      let currentExchangeRate = null;
+  // دالة عرض لوحة الأدمن
+  function showAdminPanel() {
+    document.getElementById("adminPanel").classList.remove("hidden");
+    loadUserList();
+  }
 
-      function saveData() {
-        if (!currentExchangeRate || currentExchangeRate <= 0) {
-          alert("الرجاء إدخال سعر صرف صحيح أولاً");
-          return;
-        }
+  // دالة تحميل قائمة المستخدمين
+  function loadUserList() {
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "getUsers",
+        adminUsername: ADMIN_USERNAME
+      }),
+    })
+    .then(res => res.json())
+    .then(users => {
+      const userList = document.getElementById("userList");
+      userList.innerHTML = "";
+      
+      users.forEach(user => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${user.username} 
+          <button onclick="deleteUser('${user.username}')" style="margin-right:10px;">حذف</button>
+          <button onclick="resetUserPassword('${user.username}')">إعادة تعيين كلمة المرور</button>
+        `;
+        userList.appendChild(li);
+      });
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("حدث خطأ أثناء جلب قائمة المستخدمين");
+    });
+  }
 
-        if (products.length === 0) {
-          alert("لا توجد منتجات لحفظها");
-          return;
-        }
+  // دالة حذف المستخدم
+  function deleteUser(username) {
+    if (!confirm(`هل أنت متأكد من حذف المستخدم ${username}؟`)) return;
+    
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "deleteUser",
+        username,
+        adminUsername: ADMIN_USERNAME
+      }),
+    })
+    .then(res => res.text())
+    .then(() => {
+      alert("تم حذف المستخدم بنجاح");
+      loadUserList();
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("حدث خطأ أثناء حذف المستخدم");
+    });
+  }
 
-        const dataToSave = {
-          products: products,
-          exchangeRate: currentExchangeRate,
-          lastUpdated: new Date().toISOString(),
-        };
+  // دالة إعادة تعيين كلمة المرور
+  function resetUserPassword(username) {
+    const newPassword = prompt("أدخل كلمة المرور الجديدة للمستخدم:");
+    if (!newPassword) return;
+    
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "resetPassword",
+        username,
+        newPassword,
+        adminUsername: ADMIN_USERNAME
+      }),
+    })
+    .then(res => res.text())
+    .then(() => {
+      alert("تم تحديث كلمة المرور بنجاح");
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("حدث خطأ أثناء تحديث كلمة المرور");
+    });
+  }
 
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-          alert("تم حفظ البيانات بنجاح على جهازك!");
-        } catch (e) {
-          alert("حدث خطأ أثناء محاولة حفظ البيانات: " + e.message);
-        }
-      }
+  function showLoadDataScreen() {
+    document.getElementById("passwordScreen").style.display = "none";
+    document.getElementById("loadDataScreen").classList.remove("hidden");
+  }
 
-      function loadData() {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        if (savedData) {
-          try {
-            const parsedData = JSON.parse(savedData);
+  function backToPasswordScreen() {
+    document.getElementById("loadDataScreen").classList.add("hidden");
+    document.getElementById("passwordScreen").style.display = "block";
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordInput").focus();
+    document.getElementById("errorMsg").style.display = "none";
+  }
 
-            if (
-              parsedData.products &&
-              Array.isArray(parsedData.products) &&
-              parsedData.exchangeRate &&
-              !isNaN(parsedData.exchangeRate)
-            ) {
-              products = parsedData.products;
-              currentExchangeRate = parseFloat(parsedData.exchangeRate);
+  function loadSavedData() {
+    document.getElementById("loadDataScreen").classList.add("hidden");
+    document.getElementById("mainContent").classList.remove("hidden");
+    loadData();
+  }
 
-              document.getElementById("exchangeRate").value =
-                currentExchangeRate;
-              document.getElementById("exchangeRate").readOnly = true;
+  function startNewProject() {
+    if (confirm("هل أنت متأكد أنك تريد بدء مشروع جديد؟ سيتم مسح جميع البيانات المحفوظة.")) {
+      products = [];
+      currentExchangeRate = null;
+      document.getElementById("exchangeRate").value = "";
+      document.getElementById("exchangeRate").readOnly = false;
+      document.getElementById("loadDataScreen").classList.add("hidden");
+      document.getElementById("mainContent").classList.remove("hidden");
+      localStorage.removeItem(STORAGE_KEY);
+      alert("تم بدء مشروع جديد بنجاح");
+    }
+  }
 
-              alert("تم تحميل " + products.length + " منتج بنجاح");
-            } else {
-              alert("بيانات غير صالحة، سيتم بدء مشروع جديد");
-              startNewProject();
-            }
-          } catch (e) {
-            alert("خطأ في تحميل البيانات: " + e.message);
-            startNewProject();
-          }
+  function saveData() {
+    if (!currentExchangeRate || currentExchangeRate <= 0) {
+      alert("الرجاء إدخال سعر صرف صحيح أولاً");
+      return;
+    }
+
+    if (products.length === 0) {
+      alert("لا توجد منتجات لحفظها");
+      return;
+    }
+
+    const dataToSave = {
+      products: products,
+      exchangeRate: currentExchangeRate,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      alert("تم حفظ البيانات بنجاح على جهازك!");
+    } catch (e) {
+      alert("حدث خطأ أثناء محاولة حفظ البيانات: " + e.message);
+    }
+  }
+
+  function loadData() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+
+        if (parsedData.products && Array.isArray(parsedData.products) && parsedData.exchangeRate && !isNaN(parsedData.exchangeRate)) {
+          products = parsedData.products;
+          currentExchangeRate = parseFloat(parsedData.exchangeRate);
+
+          document.getElementById("exchangeRate").value = currentExchangeRate;
+          document.getElementById("exchangeRate").readOnly = true;
+
+          alert("تم تحميل " + products.length + " منتج بنجاح");
         } else {
-          alert("لا توجد بيانات محفوظة، سيتم بدء مشروع جديد");
+          alert("بيانات غير صالحة، سيتم بدء مشروع جديد");
           startNewProject();
         }
+      } catch (e) {
+        alert("خطأ في تحميل البيانات: " + e.message);
+        startNewProject();
       }
+    } else {
+      alert("لا توجد بيانات محفوظة، سيتم بدء مشروع جديد");
+      startNewProject();
+    }
+  }
 
-      function addProduct() {
-        const productName = document.getElementById("productName").value.trim();
-        const buyPrice = parseFloat(document.getElementById("buyPrice").value);
-        const sellPrice = parseFloat(
-          document.getElementById("sellPrice").value
-        );
-        const exchangeRateInput = parseFloat(
-          document.getElementById("exchangeRate").value
-        );
-        const quantity = parseInt(
-          document.getElementById("productQuantity").value
-        );
+  function addProduct() {
+    const productName = document.getElementById("productName").value.trim();
+    const buyPrice = parseFloat(document.getElementById("buyPrice").value);
+    const sellPrice = parseFloat(document.getElementById("sellPrice").value);
+    const exchangeRateInput = parseFloat(document.getElementById("exchangeRate").value);
+    const quantity = parseInt(document.getElementById("productQuantity").value);
 
-        if (!productName) return alert("الرجاء إدخال اسم المنتج");
-        if (isNaN(buyPrice)) return alert("سعر الشراء غير صحيح");
-        if (isNaN(sellPrice)) return alert("سعر البيع غير صحيح");
-        if (isNaN(exchangeRateInput)) return alert("سعر الصرف غير صحيح");
-        if (isNaN(quantity) || quantity < 1) return alert("الكمية غير صحيحة");
+    if (!productName) return alert("الرجاء إدخال اسم المنتج");
+    if (isNaN(buyPrice)) return alert("سعر الشراء غير صحيح");
+    if (isNaN(sellPrice)) return alert("سعر البيع غير صحيح");
+    if (isNaN(exchangeRateInput)) return alert("سعر الصرف غير صحيح");
+    if (isNaN(quantity) || quantity < 1) return alert("الكمية غير صحيحة");
 
-        if (currentExchangeRate === null) {
-          currentExchangeRate = exchangeRateInput;
-          document.getElementById("exchangeRate").readOnly = true;
-        }
+    if (currentExchangeRate === null) {
+      currentExchangeRate = exchangeRateInput;
+      document.getElementById("exchangeRate").readOnly = true;
+    }
 
-        const buyPriceUSD = buyPrice / currentExchangeRate;
-        const sellPriceUSD = sellPrice / currentExchangeRate;
+    const buyPriceUSD = buyPrice / currentExchangeRate;
+    const sellPriceUSD = sellPrice / currentExchangeRate;
 
-        const product = {
-          id: Date.now(),
-          name: productName,
-          buyPriceLBP: buyPrice,
-          sellPriceLBP: sellPrice,
-          buyPriceUSD: buyPriceUSD,
-          sellPriceUSD: sellPriceUSD,
-          profitLBP: sellPrice - buyPrice,
-          profitUSD: sellPriceUSD - buyPriceUSD,
-          quantity: quantity,
-          soldQuantity: 0, // الكمية المباعة
-          remainingQuantity: quantity, // الكمية المتبقية
-          addedDate: new Date().toISOString(),
-        };
+    const product = {
+      id: Date.now(),
+      name: productName,
+      buyPriceLBP: buyPrice,
+      sellPriceLBP: sellPrice,
+      buyPriceUSD: buyPriceUSD,
+      sellPriceUSD: sellPriceUSD,
+      profitLBP: sellPrice - buyPrice,
+      profitUSD: sellPriceUSD - buyPriceUSD,
+      quantity: quantity,
+      soldQuantity: 0,
+      remainingQuantity: quantity,
+      addedDate: new Date().toISOString(),
+    };
 
-        products.push(product);
-        clearProductInputs();
-        alert("تمت الإضافة بنجاح");
-        saveData();
-      }
+    products.push(product);
+    clearProductInputs();
+    alert("تمت الإضافة بنجاح");
+    saveData();
+  }
 
-      function showOutputPage() {
-        if (!validateData()) return;
-        document.getElementById("inputPage").classList.add("hidden");
-        document.getElementById("profitPage").classList.add("hidden");
-        document.getElementById("outputPage").classList.remove("hidden");
-        document.getElementById("currentRateDisplay").textContent =
-          currentExchangeRate.toFixed(4);
-        renderProductsTable();
-      }
+  function showOutputPage() {
+    if (!validateData()) return;
+    document.getElementById("inputPage").classList.add("hidden");
+    document.getElementById("profitPage").classList.add("hidden");
+    document.getElementById("outputPage").classList.remove("hidden");
+    document.getElementById("currentRateDisplay").textContent = currentExchangeRate.toFixed(4);
+    renderProductsTable();
+  }
 
-      function showProfitPage() {
-        if (!validateData()) return;
-        document.getElementById("inputPage").classList.add("hidden");
-        document.getElementById("outputPage").classList.add("hidden");
-        document.getElementById("profitPage").classList.remove("hidden");
-        document.getElementById("profitRateDisplay").textContent =
-          currentExchangeRate.toFixed(4);
-        renderProfitTable();
-      }
+  function showProfitPage() {
+    if (!validateData()) return;
+    document.getElementById("inputPage").classList.add("hidden");
+    document.getElementById("outputPage").classList.add("hidden");
+    document.getElementById("profitPage").classList.remove("hidden");
+    document.getElementById("profitRateDisplay").textContent = currentExchangeRate.toFixed(4);
+    renderProfitTable();
+  }
 
-      function renderProductsTable() {
-        const tbody = document.querySelector("#productsTable tbody");
-        tbody.innerHTML = "";
+  function renderProductsTable() {
+    const tbody = document.querySelector("#productsTable tbody");
+    tbody.innerHTML = "";
 
-        products.forEach((product) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-                                <td>${product.name}</td>
-                                <td>${product.buyPriceLBP.toFixed(2)}</td>
-                                <td>${product.sellPriceLBP.toFixed(2)}</td>
-                                <td>$${product.sellPriceUSD.toFixed(2)}</td>
-                                <td>
-                                    <button class="sell-btn" onclick="sellProduct(${
-                                      product.id
-                                    }, 1)">بيع قطعة</button>
-                                    <button onclick="editProduct(${
-                                      product.id
-                                    })">تعديل</button>
-                                    <button onclick="deleteProduct(${
-                                      product.id
-                                    })">حذف</button>
-                                </td>
-                            `;
-          tbody.appendChild(row);
-        });
-      }
+    products.forEach((product) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${product.name}</td>
+        <td>${product.buyPriceLBP.toFixed(2)}</td>
+        <td>${product.sellPriceLBP.toFixed(2)}</td>
+        <td>$${product.sellPriceUSD.toFixed(2)}</td>
+        <td class="action-cell">
+          <button class="sell-btn" onclick="sellProduct(${product.id}, 1)">بيع قطعة</button>
+          <button class="edit-btn" onclick="editProduct(${product.id})">تعديل</button>
+          <button class="delete-btn" onclick="deleteProduct(${product.id})">حذف</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
 
-      function renderProfitTable() {
-        const tbody = document.querySelector("#profitTable tbody");
-        const tfoot = document.getElementById("profitTotals");
-        tbody.innerHTML = "";
-        tfoot.style.display = "none";
+  function renderProfitTable() {
+    const tbody = document.querySelector("#profitTable tbody");
+    const tfoot = document.getElementById("profitTotals");
+    tbody.innerHTML = "";
+    tfoot.style.display = "none";
 
-        let totalLBP = 0;
-        let totalUSD = 0;
+    let totalLBP = 0;
+    let totalUSD = 0;
 
-        products.forEach((product) => {
-          const lbpProfit = product.profitLBP * product.quantity;
-          const usdProfit = product.profitUSD * product.quantity;
-          totalLBP += lbpProfit;
-          totalUSD += usdProfit;
+    products.forEach((product) => {
+      const lbpProfit = product.profitLBP * product.quantity;
+      const usdProfit = product.profitUSD * product.quantity;
+      totalLBP += lbpProfit;
+      totalUSD += usdProfit;
 
-          const row = document.createElement("tr");
-          row.innerHTML = `
-                                <td>${product.name} (${
-            product.quantity
-          } قطع)</td>
-                                <td>${product.buyPriceLBP.toFixed(2)}</td>
-                                <td>${product.sellPriceLBP.toFixed(2)}</td>
-                                <td class="${
-                                  lbpProfit >= 0
-                                    ? "profit-positive"
-                                    : "profit-negative"
-                                }">${lbpProfit.toFixed(2)}</td>
-                                <td>$${product.buyPriceUSD.toFixed(2)}</td>
-                                <td>$${product.sellPriceUSD.toFixed(2)}</td>
-                                <td class="${
-                                  usdProfit >= 0
-                                    ? "profit-positive"
-                                    : "profit-negative"
-                                }">$${usdProfit.toFixed(2)}</td>
-                            `;
-          tbody.appendChild(row);
-        });
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${product.name} (${product.quantity} قطع)</td>
+        <td>${product.buyPriceLBP.toFixed(2)}</td>
+        <td>${product.sellPriceLBP.toFixed(2)}</td>
+        <td class="${lbpProfit >= 0 ? "profit-positive" : "profit-negative"}">${lbpProfit.toFixed(2)}</td>
+        <td>$${product.buyPriceUSD.toFixed(2)}</td>
+        <td>$${product.sellPriceUSD.toFixed(2)}</td>
+        <td class="${usdProfit >= 0 ? "profit-positive" : "profit-negative"}">$${usdProfit.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
 
-        if (products.length > 0) {
-          tfoot.style.display = "";
-          document.getElementById("totalProfitLBP").textContent =
-            totalLBP.toFixed(2);
-          document.getElementById(
-            "totalProfitUSD"
-          ).textContent = `$${totalUSD.toFixed(2)}`;
-        }
-      }
+    if (products.length > 0) {
+      tfoot.style.display = "";
+      document.getElementById("totalProfitLBP").textContent = totalLBP.toFixed(2);
+      document.getElementById("totalProfitUSD").textContent = `$${totalUSD.toFixed(2)}`;
+    }
+  }
 
-      function editProduct(productId) {
-        const product = products.find((p) => p.id === productId);
-        if (!product) return;
+  function editProduct(productId) {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
 
-        const newName = prompt("الاسم الجديد:", product.name);
-        if (!newName) return;
+    const newName = prompt("الاسم الجديد:", product.name);
+    if (!newName) return;
 
-        const newBuyPrice = parseFloat(
-          prompt("سعر الشراء الجديد:", product.buyPriceLBP)
-        );
-        if (isNaN(newBuyPrice)) return;
+    const newBuyPrice = parseFloat(prompt("سعر الشراء الجديد:", product.buyPriceLBP));
+    if (isNaN(newBuyPrice)) return;
 
-        const newSellPrice = parseFloat(
-          prompt("سعر البيع الجديد:", product.sellPriceLBP)
-        );
-        if (isNaN(newSellPrice)) return;
+    const newSellPrice = parseFloat(prompt("سعر البيع الجديد:", product.sellPriceLBP));
+    if (isNaN(newSellPrice)) return;
 
-        const newQuantity = parseInt(
-          prompt("الكمية الجديدة:", product.quantity)
-        );
-        if (isNaN(newQuantity)) return;
+    const newQuantity = parseInt(prompt("الكمية الجديدة:", product.quantity));
+    if (isNaN(newQuantity)) return;
 
-        product.name = newName;
-        product.buyPriceLBP = newBuyPrice;
-        product.sellPriceLBP = newSellPrice;
-        product.quantity = newQuantity;
-        product.buyPriceUSD = newBuyPrice / currentExchangeRate;
-        product.sellPriceUSD = newSellPrice / currentExchangeRate;
-        product.profitLBP = newSellPrice - newBuyPrice;
-        product.profitUSD = product.sellPriceUSD - product.buyPriceUSD;
+    product.name = newName;
+    product.buyPriceLBP = newBuyPrice;
+    product.sellPriceLBP = newSellPrice;
+    product.quantity = newQuantity;
+    product.buyPriceUSD = newBuyPrice / currentExchangeRate;
+    product.sellPriceUSD = newSellPrice / currentExchangeRate;
+    product.profitLBP = newSellPrice - newBuyPrice;
+    product.profitUSD = product.sellPriceUSD - product.buyPriceUSD;
 
-        saveData();
-        renderProductsTable();
-        if (!document.getElementById("profitPage").classList.contains("hidden"))
-          renderProfitTable();
-        alert("تم التعديل بنجاح");
-      }
+    saveData();
+    renderProductsTable();
+    if (!document.getElementById("profitPage").classList.contains("hidden")) renderProfitTable();
+    alert("تم التعديل بنجاح");
+  }
 
-      function deleteProduct(productId) {
-        if (!confirm("تأكيد الحذف؟")) return;
-        products = products.filter((p) => p.id !== productId);
-        saveData();
-        renderProductsTable();
-        if (!document.getElementById("profitPage").classList.contains("hidden"))
-          renderProfitTable();
-        alert("تم الحذف");
-      }
+  function deleteProduct(productId) {
+    if (!confirm("تأكيد الحذف؟")) return;
+    products = products.filter((p) => p.id !== productId);
+    saveData();
+    renderProductsTable();
+    if (!document.getElementById("profitPage").classList.contains("hidden")) renderProfitTable();
+    alert("تم الحذف");
+  }
 
-      function backToInputPage() {
-        document.getElementById("outputPage").classList.add("hidden");
-        document.getElementById("profitPage").classList.add("hidden");
-        document.getElementById("inputPage").classList.remove("hidden");
-      }
+  function backToInputPage() {
+    document.getElementById("outputPage").classList.add("hidden");
+    document.getElementById("profitPage").classList.add("hidden");
+    document.getElementById("inputPage").classList.remove("hidden");
+  }
 
-      function clearProductInputs() {
-        document.getElementById("productName").value = "";
-        document.getElementById("buyPrice").value = "";
-        document.getElementById("sellPrice").value = "";
-        document.getElementById("productQuantity").value = "1";
-        document.getElementById("productName").focus();
-      }
+  function clearProductInputs() {
+    document.getElementById("productName").value = "";
+    document.getElementById("buyPrice").value = "";
+    document.getElementById("sellPrice").value = "";
+    document.getElementById("productQuantity").value = "1";
+    document.getElementById("productName").focus();
+  }
 
-      document
-        .getElementById("searchInput")
-        .addEventListener("keyup", function (event) {
-          if (event.key === "Enter") searchProduct();
-        });
+  function editExchangeRate() {
+    const newRate = parseFloat(prompt("السعر الجديد:", currentExchangeRate));
+    if (newRate <= 0) return alert("يجب أن يكون السعر أكبر من صفر");
 
-      function editExchangeRate() {
-        const newRate = parseFloat(
-          prompt("السعر الجديد:", currentExchangeRate)
-        );
-        // if (isNaN(newRate) return alert('قيمة غير صالحة');
-        if (newRate <= 0) return alert("يجب أن يكون السعر أكبر من صفر");
+    const rateChange = newRate / currentExchangeRate;
+    currentExchangeRate = newRate;
 
-        const rateChange = newRate / currentExchangeRate;
-        currentExchangeRate = newRate;
+    products.forEach((p) => {
+      p.sellPriceLBP = p.sellPriceUSD * currentExchangeRate;
+      p.buyPriceUSD = p.buyPriceLBP / currentExchangeRate;
+      p.profitLBP = p.sellPriceLBP - p.buyPriceLBP;
+      p.profitUSD = p.sellPriceUSD - p.buyPriceUSD;
+    });
 
-        products.forEach((p) => {
-          p.sellPriceLBP = p.sellPriceUSD * currentExchangeRate;
-          p.buyPriceUSD = p.buyPriceLBP / currentExchangeRate;
-          p.profitLBP = p.sellPriceLBP - p.buyPriceLBP;
-          p.profitUSD = p.sellPriceUSD - p.buyPriceUSD;
-        });
+    document.getElementById("exchangeRate").value = currentExchangeRate;
+    saveData();
+    if (!document.getElementById("outputPage").classList.contains("hidden")) renderProductsTable();
+    if (!document.getElementById("profitPage").classList.contains("hidden")) renderProfitTable();
+    alert("تم تحديث سعر الصرف");
+  }
 
-        document.getElementById("exchangeRate").value = currentExchangeRate;
-        saveData();
-        if (!document.getElementById("outputPage").classList.contains("hidden"))
-          renderProductsTable();
-        if (!document.getElementById("profitPage").classList.contains("hidden"))
-          renderProfitTable();
-        alert("تم تحديث سعر الصرف");
-      }
+  function validateData() {
+    if (!currentExchangeRate) {
+      alert("حدد سعر الصرف أولاً");
+      return false;
+    }
+    if (products.length === 0) {
+      alert("لا توجد منتجات");
+      return false;
+    }
+    return true;
+  }
 
-      function validateData() {
-        if (!currentExchangeRate) {
-          alert("حدد سعر الصرف أولاً");
-          return false;
-        }
-        if (products.length === 0) {
-          alert("لا توجد منتجات");
-          return false;
-        }
-        return true;
-      }
+  function searchProduct() {
+    const term = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = term ? products.filter((p) => p.name.toLowerCase().includes(term)) : products;
 
-      function searchProduct() {
-        const term = document.getElementById("searchInput").value.toLowerCase();
-        const filtered = term
-          ? products.filter((p) => p.name.toLowerCase().includes(term))
-          : products;
+    const tbody = document.querySelector("#productsTable tbody");
+    tbody.innerHTML = "";
 
-        const tbody = document.querySelector("#productsTable tbody");
-        tbody.innerHTML = "";
+    filtered.forEach((p) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.buyPriceLBP.toFixed(2)}</td>
+          <td>${p.sellPriceLBP.toFixed(2)}</td>
+          <td>$${p.sellPriceUSD.toFixed(2)}</td>
+          <td class="action-cell">
+            <button class="sell-btn" onclick="sellProduct(${p.id}, 1)">بيع قطعة</button>
+            <button class="edit-btn" onclick="editProduct(${p.id})">تعديل</button>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">حذف</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
 
-        filtered.forEach((p) => {
-          tbody.innerHTML += `
-                                <tr>
-                                    <td>${p.name}</td>
-                                    <td>${p.buyPriceLBP.toFixed(2)}</td>
-                                    <td>${p.sellPriceLBP.toFixed(2)}</td>
-                                    <td>$${p.sellPriceUSD.toFixed(2)}</td>
-                                    <td>
-                                        <button onclick="editProduct(${
-                                          p.id
-                                        })">تعديل</button>
-                                        <button onclick="deleteProduct(${
-                                          p.id
-                                        })">حذف</button>
-                                    </td>
-                                </tr>
-                            `;
-        });
-      }
-      function exportToExcel() {
-        if (products.length === 0) {
-          alert("لا توجد بيانات للتصدير!");
-          return;
-        }
+  function exportToExcel() {
+    if (products.length === 0) {
+      alert("لا توجد بيانات للتصدير!");
+      return;
+    }
 
-        // حساب الأرباح والمجموع الكلي
-        let totalProfitLBP = 0;
-        let totalProfitUSD = 0;
+    let totalProfitLBP = 0;
+    let totalProfitUSD = 0;
 
-        const wsData = [
-          [
-            "اسم المنتج",
-            "الكمية",
-            "المباع",
-            "المتبقي",
-            "سعر الشراء (ليرة)",
-            "سعر البيع (ليرة)",
-            "الربح (ليرة)",
-            "الربح ($)",
-          ],
-          ...products.map((p) => {
-            const profitLBP =
-              (p.sellPriceLBP - p.buyPriceLBP) *
-              (p.quantity - (p.remainingQuantity || 0));
-            const profitUSD =
-              (p.sellPriceUSD - p.buyPriceUSD) *
-              (p.quantity - (p.remainingQuantity || 0));
-            totalProfitLBP += profitLBP;
-            totalProfitUSD += profitUSD;
+    const wsData = [
+      [
+        "اسم المنتج",
+        "الكمية",
+        "المباع",
+        "المتبقي",
+        "سعر الشراء (ليرة)",
+        "سعر البيع (ليرة)",
+        "الربح (ليرة)",
+        "الربح ($)",
+      ],
+      ...products.map((p) => {
+        const profitLBP = (p.sellPriceLBP - p.buyPriceLBP) * (p.quantity - (p.remainingQuantity || 0));
+        const profitUSD = (p.sellPriceUSD - p.buyPriceUSD) * (p.quantity - (p.remainingQuantity || 0));
+        totalProfitLBP += profitLBP;
+        totalProfitUSD += profitUSD;
 
-            return [
-              p.name,
-              p.quantity,
-              p.soldQuantity || 0,
-              p.remainingQuantity || p.quantity,
-              p.buyPriceLBP.toFixed(2),
-              p.sellPriceLBP.toFixed(2),
-              profitLBP.toFixed(2),
-              profitUSD.toFixed(2),
-            ];
-          }),
-          [], // سطر فارغ للفصل
-          [
-            "المجموع الكلي",
-            "",
-            "",
-            "",
-            "",
-            "",
-            totalProfitLBP.toFixed(2),
-            totalProfitUSD.toFixed(2),
-          ],
+        return [
+          p.name,
+          p.quantity,
+          p.soldQuantity || 0,
+          p.remainingQuantity || p.quantity,
+          p.buyPriceLBP.toFixed(2),
+          p.sellPriceLBP.toFixed(2),
+          profitLBP.toFixed(2),
+          profitUSD.toFixed(2),
         ];
+      }),
+      [],
+      [
+        "المجموع الكلي",
+        "",
+        "",
+        "",
+        "",
+        "",
+        totalProfitLBP.toFixed(2),
+        totalProfitUSD.toFixed(2),
+      ],
+    ];
 
-        // إنشاء ورقة العمل مع تنسيقات
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws["!cols"] = [
+      { wch: 30 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+    ];
 
-        // تحديد عرض الأعمدة (اختياري)
-        ws["!cols"] = [
-          { wch: 30 }, // اسم المنتج
-          { wch: 10 }, // الكمية
-          { wch: 10 }, // المباع
-          { wch: 10 }, // المتبقي
-          { wch: 15 }, // سعر الشراء
-          { wch: 15 }, // سعر البيع
-          { wch: 15 }, // الربح (ليرة)
-          { wch: 15 }, // الربح ($)
-        ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "المنتجات");
+    XLSX.writeFile(wb, "كشف_البضائع_مع_الأرباح.xlsx");
+  }
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "المنتجات");
+  function sellProduct(productId, quantityToSell) {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
 
-        // حفظ الملف
-        XLSX.writeFile(wb, "كشف_البضائع_مع_الأرباح.xlsx");
-      }
-      function sellProduct(productId, quantityToSell) {
-        const product = products.find((p) => p.id === productId);
+    if (product.remainingQuantity < quantityToSell) {
+      alert("الكمية المتبقية غير كافية!");
+      return;
+    }
 
-        if (!product) return;
+    product.soldQuantity = (product.soldQuantity || 0) + quantityToSell;
+    product.remainingQuantity -= quantityToSell;
 
-        if (product.remainingQuantity < quantityToSell) {
-          alert("الكمية المتبقية غير كافية!");
-          return;
-        }
+    saveData();
+    renderProductsTable();
 
-        // التحديث الصحيح
-        product.soldQuantity = (product.soldQuantity || 0) + quantityToSell;
-        product.remainingQuantity -= quantityToSell; // أفضل من: product.remainingQuantity - quantityToSell
+    if (!document.getElementById("profitPage").classList.contains("hidden")) {
+      renderProfitTable();
+    }
 
-        saveData();
-        renderProductsTable();
+    alert("تم البيع بنجاح!");
+  }
 
-        if (
-          !document.getElementById("profitPage").classList.contains("hidden")
-        ) {
-          renderProfitTable();
-        }
-
-        alert("تم البيع بنجاح!");
-      }
-      // عرض صفحة المساعدة
-function showHelpPage() {
-    // تخزين حالة الواجهة الحالية قبل عرض المساعدة
+  // عرض صفحة المساعدة
+  function showHelpPage() {
     const fromPasswordScreen = document.getElementById("passwordScreen").style.display !== "none";
     
-    // إخفاء كل الواجهات
     document.getElementById("passwordScreen").style.display = "none";
     document.getElementById("loadDataScreen").classList.add("hidden");
     document.getElementById("mainContent").classList.add("hidden");
-    
-    // إظهار صفحة المساعدة
     document.getElementById("helpPage").classList.remove("hidden");
     
-    // تخزين المعلومات للعودة الصحيحة
     sessionStorage.setItem("returnToPassword", fromPasswordScreen);
-}
-// إخفاء صفحة المساعدة
-function hideHelpPage() {
-    // إخفاء صفحة المساعدة
+  }
+
+  // إخفاء صفحة المساعدة
+  function hideHelpPage() {
     document.getElementById("helpPage").classList.add("hidden");
     
-    // إعادة عرض الواجهة التي كان المستخدم عليها قبل الدخول للمساعدة
-    if (document.getElementById("mainContent").classList.contains("hidden")) {
-        // إذا كان المستخدم في شاشة الدخول
-        document.getElementById("passwordScreen").style.display = "block";
+    if (sessionStorage.getItem("returnToPassword") === "true") {
+      document.getElementById("passwordScreen").style.display = "block";
     } else {
-        // إذا كان المستخدم في الواجهة الرئيسية
-        document.getElementById("mainContent").classList.remove("hidden");
-        document.getElementById("inputPage").classList.remove("hidden");
+      document.getElementById("mainContent").classList.remove("hidden");
+      document.getElementById("inputPage").classList.remove("hidden");
     }
-}
+  }
 
-    </script>
-    
-</body>
+  // إضافة مستمع حدث للزر Enter في حقل كلمة المرور
+  document.getElementById("passwordInput").addEventListener("keyup", function(event) {
+    if (event.key === "Enter") login();
+  });
+
+  // إضافة مستمع حدث للزر Enter في حقل البحث
+  document.getElementById("searchInput").addEventListener("keyup", function(event) {
+    if (event.key === "Enter") searchProduct();
+  });
+</script>
+  </body>
 </html>
