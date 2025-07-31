@@ -554,7 +554,8 @@ document.addEventListener('contextmenu', function(e) {
     <h2>تسجيل الدخول إلى نظام MAR</h2>
     <input type="text" id="usernameInput" placeholder="اسم المستخدم" />
     <input type="password" id="passwordInput" placeholder="كلمة المرور" />
-    <button onclick="checkLogin()">دخول</button>
+    <!-- تغيير من onclick="checkLogin()" إلى onclick="login()" -->
+<button onclick="login()">دخول</button>
     <button onclick="showHelpPage()" style="margin-top: 10px; background: #17a2b8;">شرح استخدام النظام</button>
     <p id="errorMsg" style="color: red; display: none">بيانات الدخول غير صحيحة</p>
   </div>
@@ -567,6 +568,8 @@ document.addEventListener('contextmenu', function(e) {
 <!-- لوحة تحكم الأدمن -->
 <div id="adminPanel" class="hidden" style="max-width:500px; margin:20px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
   <h3>👮‍♂️ لوحة تحكم الأدمن</h3>
+  <input type="text" id="newUsername" placeholder="اسم المستخدم الجديد" />
+  <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة" />
   <button onclick="addUser()">➕ إضافة مستخدم</button>
   <ul id="userList" style="list-style:none; padding:0;"></ul>
 </div>
@@ -964,20 +967,83 @@ window.addEventListener('load', function() {
       document.getElementById("currentYear").textContent =
         new Date().getFullYear();
 
-      function checkPassword() {
-        const enteredPassword = document
-          .getElementById("passwordInput")
-          .value.trim();
-        const errorMsg = document.getElementById("errorMsg");
-        if (enteredPassword === correctPassword) {
-          document.getElementById("passwordScreen").style.display = "none";
-          showLoadDataScreen();
-        } else {
-          errorMsg.style.display = "block";
-          document.getElementById("passwordInput").value = "";
-          document.getElementById("passwordInput").focus();
-        }
-      }
+      // بيانات الاتصال بالخادم
+const API_URL = "https://script.google.com/macros/s/AKfycbxfc--nndyS-T7AXENNuD7O-lZOQCLKdS_rjPU7P8SOskAhhGE8Z02d9XOg2Mly45It/exec";
+const ADMIN_USERNAME = "abdullahalasaadmar";
+const ADMIN_PASSWORD = "0986330544mar";
+let currentUser = "";
+
+// دالة تسجيل الدخول الجديدة
+function login() {
+  const username = document.getElementById("usernameInput").value.trim();
+  const password = document.getElementById("passwordInput").value.trim();
+  const errorMsg = document.getElementById("errorMsg");
+
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    sessionStorage.setItem("loggedUser", ADMIN_USERNAME);
+    showAdminPanel();
+    showLoadDataScreen();
+    return;
+  }
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      username,
+      password
+    }),
+  })
+  .then(res => res.text())
+  .then(res => {
+    if (res === "success") {
+      currentUser = username;
+      sessionStorage.setItem("loggedUser", username);
+      document.getElementById("errorMsg").style.display = "none";
+      showLoadDataScreen();
+    } else {
+      errorMsg.style.display = "block";
+      document.getElementById("passwordInput").value = "";
+      document.getElementById("passwordInput").focus();
+    }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    errorMsg.textContent = "حدث خطأ في الاتصال بالخادم";
+    errorMsg.style.display = "block";
+  });
+}
+
+// دالة إضافة مستخدم (للوحة التحكم)
+function addUser() {
+  const username = document.getElementById("newUsername").value.trim();
+  const password = document.getElementById("newPassword").value.trim();
+
+  if (!username || !password) {
+    alert("يجب إدخال جميع الحقول");
+    return;
+  }
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "addUser",
+      username,
+      password,
+      addedBy: ADMIN_USERNAME
+    }),
+  })
+  .then(res => res.text())
+  .then(() => {
+    alert("✅ تم إضافة المستخدم");
+    document.getElementById("newUsername").value = "";
+    document.getElementById("newPassword").value = "";
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    alert("حدث خطأ أثناء إضافة المستخدم");
+  });
+}
 
       function showLoadDataScreen() {
         document.getElementById("loadDataScreen").classList.remove("hidden");
@@ -1494,123 +1560,5 @@ function hideHelpPage() {
 
     </script>
     
-  
-<script>
-// بيانات الأدمن
-const ADMIN_USERNAME = "abdullahalasaadmar";
-const ADMIN_PASSWORD = "0986330544mar";
-
-// تحميل المستخدمين من localStorage أو إنشاء قائمة جديدة
-function getUsers() {
-  const users = JSON.parse(localStorage.getItem("mar_users") || "[]");
-  return users;
-}
-
-function saveUsers(users) {
-  localStorage.setItem("mar_users", JSON.stringify(users));
-}
-
-function hash(str) {
-  return btoa(str); // تشفير بسيط
-}
-
-function checkLogin() {
-  const username = document.getElementById("usernameInput").value.trim();
-  const password = document.getElementById("passwordInput").value;
-
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    sessionStorage.setItem("loggedUser", ADMIN_USERNAME);
-    showAdminPanel();
-    showLoadDataScreen();
-    return;
-  }
-
-  const users = getUsers();
-  const user = users.find(u => u.username === username && u.password === hash(password));
-  if (user) {
-    sessionStorage.setItem("loggedUser", username);
-    showLoadDataScreen();
-  } else {
-    document.getElementById("errorMsg").style.display = "block";
-  }
-}
-
-function logout() {
-  sessionStorage.removeItem("loggedUser");
-  location.reload();
-}
-
-function showAdminPanel() {
-  document.getElementById("adminPanel").classList.remove("hidden");
-  renderUserList();
-}
-
-function addUser() {
-  const newUsername = prompt("أدخل اسم المستخدم الجديد:");
-  const newPassword = prompt("أدخل كلمة المرور:");
-  if (!newUsername || !newPassword) return alert("يجب إدخال جميع الحقول");
-
-  const users = getUsers();
-  if (users.find(u => u.username === newUsername)) return alert("المستخدم موجود مسبقاً");
-
-  users.push({ username: newUsername, password: hash(newPassword) });
-  saveUsers(users);
-  alert("تمت الإضافة بنجاح");
-  renderUserList();
-}
-
-function deleteUser(username) {
-  if (username === ADMIN_USERNAME) return alert("لا يمكن حذف الأدمن");
-  if (!confirm("هل أنت متأكد أنك تريد حذف هذا المستخدم؟")) return;
-
-  let users = getUsers();
-  users = users.filter(u => u.username !== username);
-  saveUsers(users);
-  renderUserList();
-}
-
-function renderUserList() {
-  const list = document.getElementById("userList");
-  const users = getUsers();
-  list.innerHTML = users.map(u => 
-    `<li>${u.username} <button onclick="deleteUser('${u.username}')">🗑️</button></li>`
-  ).join("");
-}
-// إعدادات البوت
-const TELEGRAM_BOT_TOKEN = "8444910099:AAEi3sUEH9PgA9WiMNeTlgmL_VN77xCrS60";
-const TELEGRAM_CHAT_ID = "6457919627";
-
-// دالة إرسال بيانات المستخدم عبر Telegram
-async function sendToTelegram(username, password) {
-  const message = `📌 طلب تسجيل جديد:\n\n👤 اسم المستخدم: ${username}\n🔐 كلمة المرور: ${password}`;
-  
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`;
-  
-  try {
-    await fetch(url);
-    alert("تم إرسال بيانات المستخدم إليك على Telegram!");
-  } catch (error) {
-    alert("حدث خطأ أثناء الإرسال: " + error);
-  }
-}
-
-// تعديل دالة إضافة المستخدم
-function addUser() {
-  const newUsername = prompt("أدخل اسم المستخدم الجديد:");
-  const newPassword = prompt("أدخل كلمة المرور:");
-  
-  if (newUsername && newPassword) {
-    sendToTelegram(newUsername, newPassword);
-    
-    // إضافة المستخدم محليًا (اختياري)
-    const users = getUsers();
-    users.push({ username: newUsername, password: btoa(newPassword) });
-    saveUsers(users);
-    renderUserList();
-  }
-}
-
-</script>
-
 </body>
 </html>
